@@ -1,0 +1,573 @@
+import React, { useEffect, useState } from "react";
+import { DataGrid } from "@material-ui/data-grid";
+import { Button } from "@material-ui/core";
+import { AiOutlineDelete, AiOutlineEdit, AiOutlineAppstoreAdd, AiOutlinePlus } from "react-icons/ai";
+import { FiSearch } from "react-icons/fi";
+import { BsFilter } from "react-icons/bs";
+import { server } from "../../server";
+import { toast } from "react-toastify";
+import axios from "axios";
+import Loader from "../Layout/Loader";
+
+const AllSubcategories = () => {
+  const [subcategories, setSubcategories] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    categoryId: "",
+    image: null,
+  });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [rows, setRows] = useState([]);
+
+  useEffect(() => {
+    fetchSubcategories();
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (subcategories && Array.isArray(subcategories)) {
+      const formattedRows = subcategories
+        .filter(subcategory => subcategory && subcategory._id)
+        .map(subcategory => ({
+          id: subcategory._id,
+          _id: subcategory._id,
+          name: subcategory.name || 'N/A',
+          description: subcategory.description || 'N/A',
+          category: subcategory.category,
+          image: subcategory.image || null,
+          createdAt: subcategory.createdAt || new Date(),
+        }));
+      setRows(formattedRows);
+    }
+  }, [subcategories]);
+
+  // Filter subcategories based on search term and date range
+  const filteredSubcategories = rows.filter((subcategory) => {
+    const subcategoryName = String(subcategory.name || "").toLowerCase();
+    const subcategoryId = String(subcategory.id || "").toLowerCase();
+    const subcategoryDescription = String(subcategory.description || "").toLowerCase();
+    const categoryName = String(subcategory.category?.name || "").toLowerCase();
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch = subcategoryName.includes(search) || 
+                         subcategoryId.includes(search) || 
+                         subcategoryDescription.includes(search) ||
+                         categoryName.includes(search);
+
+    const subcategoryDate = new Date(subcategory.createdAt);
+    const start = startDate ? new Date(startDate) : null;
+
+    const matchesDate = !start || subcategoryDate >= start;
+
+    return matchesSearch && matchesDate;
+  });
+
+  const fetchSubcategories = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${server}/subcategories`, {
+        withCredentials: true,
+      });
+      setSubcategories(response.data.data || []);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.response?.data?.error || "Error fetching subcategories");
+      setSubcategories([]);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${server}/categories`, {
+        withCredentials: true,
+      });
+      setCategories(response.data.data || []);
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Error fetching categories");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("category", formData.categoryId);
+      if (formData.image) {
+        formDataToSend.append("image", formData.image);
+      }
+
+      if (selectedSubcategory) {
+        await axios.put(
+          `${server}/subcategories/${selectedSubcategory._id}`,
+          formDataToSend,
+          { 
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        toast.success("Subcategory updated successfully!");
+      } else {
+        await axios.post(`${server}/subcategories`, formDataToSend, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        toast.success("Subcategory created successfully!");
+      }
+      setOpen(false);
+      setSelectedSubcategory(null);
+      setFormData({ name: "", description: "", categoryId: "", image: null });
+      fetchSubcategories();
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.response?.data?.error || "Error saving subcategory");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      setLoading(true);
+      await axios.delete(`${server}/subcategories/${id}`, {
+        withCredentials: true,
+      });
+      toast.success("Subcategory deleted successfully!");
+      fetchSubcategories();
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.response?.data?.error || "Error deleting subcategory");
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEdit = (subcategory) => {
+    setSelectedSubcategory(subcategory);
+    setFormData({
+      name: subcategory.name,
+      description: subcategory.description,
+      categoryId: subcategory.category?._id || "",
+      image: null
+    });
+    setImagePreview(subcategory.image);
+    setOpen(true);
+  };
+
+  const columns = [
+    {
+      field: "id",
+      headerName: "Subcategory ID",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3 w-full">
+          <div className="p-2.5 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex-shrink-0 shadow-sm">
+            <AiOutlineAppstoreAdd className="text-indigo-600" size={20} />
+          </div>
+          <div className="flex flex-col justify-center min-w-[100px]">
+            <span className="font-semibold text-gray-800 truncate leading-tight">#{params.value ? params.value.slice(-6) : 'N/A'}</span>
+            <span className="text-xs text-gray-500 leading-tight mt-0.5 font-medium">Subcategory ID</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      field: "image",
+      headerName: "Image",
+      minWidth: 100,
+      flex: 1,
+      renderCell: (params) => (
+        <div className="w-[50px] h-[50px] rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+          <img
+            src={params.value}
+            alt={params.row.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.src = "https://via.placeholder.com/50";
+            }}
+          />
+        </div>
+      ),
+    },
+    {
+      field: "name",
+      headerName: "Name",
+      minWidth: 180,
+      flex: 1.5,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3 w-full">
+          <div className="p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex-shrink-0 shadow-sm">
+            <AiOutlineAppstoreAdd className="text-blue-600" size={20} />
+          </div>
+          <div className="flex flex-col justify-center min-w-[120px]">
+            <span className="font-semibold text-gray-800 hover:text-indigo-600 transition-colors duration-200 cursor-pointer truncate leading-tight">{params.value || 'N/A'}</span>
+            <span className="text-xs text-gray-500 leading-tight mt-0.5 font-medium">Subcategory Name</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      field: "category",
+      headerName: "Category",
+      minWidth: 180,
+      flex: 1.2,
+      renderCell: (params) => (
+        <div className="flex items-center">
+          <div className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 px-3 py-1.5 rounded-lg font-medium text-sm shadow-sm border border-green-200">
+            {params.value?.name || 'N/A'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      minWidth: 200,
+      flex: 1.2,
+      renderCell: (params) => (
+        <div className="flex items-center">
+          <div className="bg-gradient-to-r from-gray-100 to-gray-50 text-gray-700 px-3 py-1.5 rounded-lg font-medium text-sm shadow-sm border border-gray-200">
+            {params.value || 'N/A'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      field: "createdDate",
+      headerName: "Created Date",
+      minWidth: 180,
+      flex: 1,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3 w-full">
+          <div className="p-2.5 bg-gradient-to-br from-gray-100 to-slate-100 rounded-xl flex-shrink-0 shadow-sm">
+            <AiOutlineAppstoreAdd className="text-gray-600" size={20} />
+          </div>
+          <div className="flex flex-col justify-center min-w-[120px]">
+            <span className="font-semibold text-gray-800 truncate leading-tight">
+              {new Date(params.row.createdAt).toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+              })}
+            </span>
+            <span className="text-xs text-gray-500 leading-tight mt-0.5 font-medium">Creation Date</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      minWidth: 150,
+      flex: 0.8,
+      renderCell: (params) => (
+        <div className="flex items-center justify-start gap-2 w-full">
+          <button 
+            className="group flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
+            onClick={() => handleEdit(params.row)}
+            title="Edit Subcategory"
+          >
+            <AiOutlineEdit size={18} className="group-hover:scale-110 transition-transform duration-200" />
+          </button>
+          <button
+            className="group flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
+            onClick={() => handleDelete(params.row._id)}
+            title="Delete Subcategory"
+          >
+            <AiOutlineDelete size={18} className="group-hover:scale-110 transition-transform duration-200" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="w-full p-8 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4">
+        <div className="relative">
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl shadow-2xl">
+                <AiOutlineAppstoreAdd className="text-4xl text-white filter drop-shadow-lg" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full shadow-lg"></div>
+            </div>
+            <div>
+              <div className="font-black text-4xl font-Poppins bg-gradient-to-r from-gray-900 via-indigo-800 to-purple-800 bg-clip-text text-transparent leading-tight">
+                All Subcategories
+              </div>
+              <div className="text-gray-600 text-lg mt-2 font-medium">
+                Manage and monitor all subcategories
+              </div>
+              <div className="text-sm text-gray-500 mt-1">
+                {filteredSubcategories?.length || 0} total subcategories
+                {(searchTerm || startDate) && (
+                  <span className="ml-2 text-blue-600 font-medium">
+                    (Filtered from {rows?.length || 0} total)
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="absolute -top-4 -left-4 w-24 h-24 bg-gradient-to-br from-indigo-200 to-purple-200 rounded-full opacity-30 blur-2xl animate-pulse"></div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="w-full min-h-[70vh] relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-indigo-100/30 to-purple-100/30 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-pink-100/30 to-blue-100/30 rounded-full blur-3xl"></div>
+        
+        <div className="w-full relative z-10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative flex-1 sm:flex-none">
+                <input
+                  type="text"
+                  placeholder="Search subcategories..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full sm:w-[300px] pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                />
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              </div>
+              <div className="relative w-full sm:w-auto">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                />
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedSubcategory(null);
+                setFormData({ name: "", description: "", categoryId: "", image: null });
+                setImagePreview(null);
+                setOpen(true);
+              }}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              <AiOutlinePlus size={18} />
+              <span className="text-sm font-medium">Add New Subcategory</span>
+            </button>
+          </div>
+
+          {loading ? (
+            <Loader />
+          ) : filteredSubcategories.length === 0 ? (
+            <div className="w-full h-[400px] flex items-center justify-center bg-white rounded-xl shadow-lg">
+              <div className="text-center">
+                <AiOutlineAppstoreAdd className="mx-auto text-gray-400" size={48} />
+                <p className="mt-4 text-gray-600">
+                  {searchTerm || startDate ? "No subcategories match your filters" : "No subcategories found"}
+                </p>
+                {(searchTerm || startDate) && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setStartDate("");
+                    }}
+                    className="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="w-full overflow-x-auto bg-white rounded-xl shadow-lg p-4">
+              <DataGrid
+                rows={filteredSubcategories}
+                columns={columns}
+                pageSize={12}
+                disableSelectionOnClick
+                autoHeight
+                className="!border-none"
+                getRowHeight={() => 'auto'}
+                rowHeight={90}
+                componentsProps={{
+                  footer: {
+                    sx: {
+                      position: 'relative',
+                      overflow: 'visible'
+                    }
+                  },
+                  panel: {
+                    sx: {
+                      overflow: 'visible'
+                    }
+                  }
+                }}
+                sx={{
+                  '& .MuiDataGrid-cell': {
+                    overflow: 'visible'
+                  },
+                  '& .MuiDataGrid-row': {
+                    overflow: 'visible'
+                  },
+                  '& .MuiDataGrid-virtualScroller': {
+                    overflow: 'visible !important'
+                  },
+                  '& .MuiDataGrid-virtualScrollerContent': {
+                    overflow: 'visible !important'
+                  },
+                  '& .MuiDataGrid-virtualScrollerRenderZone': {
+                    overflow: 'visible !important'
+                  }
+                }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {open && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-gray-900 via-indigo-800 to-purple-800 bg-clip-text text-transparent">
+              {selectedSubcategory ? "Edit Subcategory" : "Add New Subcategory"}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                  rows="3"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <select
+                  value={formData.categoryId}
+                  onChange={(e) =>
+                    setFormData({ ...formData, categoryId: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Image
+                </label>
+                <div className="flex flex-col items-center justify-center w-full">
+                  <div className="w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    {imagePreview ? (
+                      <div className="relative w-full h-full">
+                        <img
+                          src={imagePreview}
+                          alt="Subcategory preview"
+                          className="w-full h-full object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImagePreview(null);
+                            setFormData({ ...formData, image: null });
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+                        >
+                          <AiOutlineDelete size={20} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <AiOutlinePlus size={30} className="text-gray-400" />
+                          <p className="mb-2 text-sm text-gray-500">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 2MB)</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={handleImageChange}
+                          accept="image/*"
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  {selectedSubcategory ? "Update" : "Create"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AllSubcategories; 
