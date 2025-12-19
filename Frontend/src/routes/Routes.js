@@ -17,6 +17,10 @@ import OrderDetailsPage from "../pages/OrderDetailsPage";
 import TrackOrderPage from "../pages/TrackOrderPage";
 import UserInbox from "../pages/UserInbox";
 import Payment from "../components/Payment/Payment";
+import AboutPage from "../pages/AboutPage";
+import ContactUsPage from "../pages/ContactUsPage";
+import ShippingPage from "../pages/ShippingPage";
+import PrivacyPolicyPage from "../pages/PrivacyPolicyPage";
 
 export {
   LoginPage,
@@ -38,4 +42,8 @@ export {
   TrackOrderPage,
   UserInbox,
   Payment,
+  AboutPage,
+  ContactUsPage,
+  ShippingPage,
+  PrivacyPolicyPage,
 };

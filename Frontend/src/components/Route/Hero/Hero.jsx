@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import styles from "../../../styles/styles";
 import axios from "axios";
 import { server } from "../../../server";
-import { AiOutlineShoppingCart, AiOutlineArrowRight } from "react-icons/ai";
+import { AiOutlineShoppingCart } from "react-icons/ai";
 import { motion } from "framer-motion";
 import Typewriter from './Typewriter';
 
@@ -22,10 +22,9 @@ const Hero = () => {
                 if (data?.data?.banner) {
                     setBanner(data.data.banner);
                 } else {
-                    setError("No banner URL found in configuration");
+                    setError("No banner found");
                 }
             } catch (error) {
-                console.error("Error fetching banner:", error);
                 setError("Failed to load banner");
             } finally {
                 setLoading(false);
@@ -35,38 +34,29 @@ const Hero = () => {
     }, []);
 
     const handleFirstLineComplete = () => {
-        // Start the second line after a short delay
-        setTimeout(() => {
-            setShowSecondLine(true);
-        }, 500);
+        setTimeout(() => setShowSecondLine(true), 500);
     };
 
-    const restartTypingAnimation = () => {
-        setShowSecondLine(false);
-        setRestartAnimation(prev => prev + 1);
-    };
-
-    // Optional: Restart animation every 10 seconds for demo purposes
     useEffect(() => {
         const interval = setInterval(() => {
-            restartTypingAnimation();
+            setShowSecondLine(false);
+            setRestartAnimation(prev => prev + 1);
         }, 10000);
-
         return () => clearInterval(interval);
     }, []);
 
     return (
         <div
             className="relative min-h-[85vh] w-full bg-no-repeat flex items-center"
-            style={{
-                backgroundImage: banner ? `url(${banner})` : 'none',
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundColor: "#f5f5f5"
-            }}
+            // style={{
+            //     backgroundImage: banner ? `url(${banner})` : 'none',
+            //     backgroundSize: "cover",
+            //     backgroundPosition: "center",
+            //     backgroundColor: "#000"
+            // }}
         >
-            {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30"></div>
+            {/* Dark cinematic overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/40"></div>
 
             <div className="relative z-10 w-[90%] 800px:w-[60%] mx-auto px-4 sm:px-6">
                 <motion.div
@@ -74,24 +64,25 @@ const Hero = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
                 >
-                    <h1 className="text-[28px] leading-[1.2] sm:text-[40px] md:text-[50px] lg:text-[60px] 800px:text-[70px] font-[700] capitalize text-white drop-shadow-lg">
-                        <Typewriter 
-                            text="Fresh Groceries"
-                            speed={150}
+                    {/* HERO TITLE */}
+                    <h1 className="text-[28px] sm:text-[40px] md:text-[55px] lg:text-[65px] font-[800] text-white leading-tight drop-shadow-xl">
+                        <Typewriter
+                            text="THALAPATHY VIJAY"
+                            speed={120}
                             delay={500}
                             onComplete={handleFirstLineComplete}
                             restart={restartAnimation}
                         />
-                        <br /> 
+                        <br />
                         {showSecondLine && (
-                            <motion.span 
-                                className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent"
+                            <motion.span
+                                className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5 }}
                             >
-                                <Typewriter 
-                                    text="Delivered to Your Door"
+                                <Typewriter
+                                    text="Fan Edition T-Shirts"
                                     speed={100}
                                     delay={0}
                                     restart={restartAnimation}
@@ -100,86 +91,71 @@ const Hero = () => {
                         )}
                     </h1>
 
-                    <motion.p 
-                        className="pt-4 sm:pt-6 text-[14px] sm:text-[16px] md:text-[18px] font-[Poppins] font-[400] text-white/90 max-w-2xl leading-relaxed"
+                    {/* DESCRIPTION */}
+                    <motion.p
+                        className="pt-5 text-[14px] sm:text-[16px] md:text-[18px] text-white/90 max-w-2xl leading-relaxed"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 2.5 }}
                     >
-                        Discover our wide selection of fresh fruits, vegetables, dairy products, and pantry essentials. 
-                        Shop from the comfort of your home and get your groceries delivered right to your doorstep.
+                        Celebrate the legacy of Thalapathy Vijay with premium fan-edition T-shirts.
+                        Iconic designs, powerful quotes, and mass looks — made exclusively for true fans.
                     </motion.p>
 
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8">
-                        <Link to="/products" className="inline-block w-full sm:w-auto">
-                            <motion.div 
-                                className="group w-full"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                    {/* CTA BUTTON */}
+                    <div className="flex gap-4 mt-8">
+                        <Link to="/products">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="inline-flex items-center gap-3 px-8 py-4 rounded-full 
+                                bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-bold 
+                                shadow-xl hover:from-yellow-400 hover:to-orange-500 transition"
                             >
-                                <button className="relative inline-flex items-center justify-center w-full px-6 sm:px-8 py-3 sm:py-4 overflow-hidden font-medium transition duration-300 ease-out rounded-full shadow-lg group bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white">
-                                    <span className="absolute inset-0 flex items-center justify-center w-full h-full text-white duration-300 -translate-x-full bg-gradient-to-r from-blue-800 to-blue-900 group-hover:translate-x-0 ease">
-                                        <AiOutlineShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
-                                    </span>
-                                    <span className="absolute flex items-center justify-center w-full h-full text-white transition-all duration-300 transform group-hover:translate-x-full ease">
-                                        Shop Now
-                                    </span>
-                                    <span className="relative invisible">Shop Now</span>
-                                </button>
-                            </motion.div>
-                        </Link>
-
-                        <Link to="/categories" className="inline-block w-full sm:w-auto">
-                            <motion.div 
-                                className="group w-full"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                <button className="relative inline-flex items-center justify-center w-full px-6 sm:px-8 py-3 sm:py-4 overflow-hidden font-medium transition duration-300 ease-out rounded-full shadow-lg group bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/20">
-                                    <span className="flex items-center gap-2">
-                                        Explore Categories
-                                        <AiOutlineArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-                                    </span>
-                                </button>
-                            </motion.div>
+                                <AiOutlineShoppingCart size={22} />
+                               Buy Now
+                            </motion.button>
                         </Link>
                     </div>
 
-                    {/* Features section */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8 sm:mt-12">
+                    {/* FAN FEATURES */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-10">
                         {[
-                            { text: "Free Delivery", icon: "🚚" },
-                            { text: "24/7 Support", icon: "💬" },
-                            { text: "Fresh Products", icon: "✨" },
-                            { text: "Secure Payment", icon: "🔒" }
-                        ].map((feature, index) => (
+                            { text: "Fan Edition", icon: "🔥" },
+                            { text: "Premium Cotton", icon: "👕" },
+                            { text: "Limited Stock", icon: "⚡" },
+                            { text: "All India Delivery", icon: "🚚" }
+                        ].map((item, index) => (
                             <motion.div
                                 key={index}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                className="flex items-center gap-2 text-white/90 bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3"
+                                transition={{ duration: 0.4, delay: index * 0.1 }}
+                                className="flex items-center gap-2 text-white bg-white/10 backdrop-blur-sm rounded-lg p-3"
                             >
-                                <span className="text-xl sm:text-2xl">{feature.icon}</span>
-                                <span className="text-xs sm:text-sm font-medium">{feature.text}</span>
+                                <span className="text-xl">{item.icon}</span>
+                                <span className="text-sm font-semibold">{item.text}</span>
                             </motion.div>
                         ))}
                     </div>
                 </motion.div>
             </div>
 
+            {/* Loader */}
             {loading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
                 </div>
             )}
+
+            {/* Error */}
             {error && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <p className="text-red-500 bg-white/90 px-4 py-2 rounded-lg">{error}</p>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                    <p className="text-red-500 bg-white px-4 py-2 rounded-lg">{error}</p>
                 </div>
             )}
         </div>
     )
 }
 
-export default Hero
+export default Hero;

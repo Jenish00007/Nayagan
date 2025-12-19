@@ -259,10 +259,10 @@ const ProductDetails = ({ data }) => {
               <div className="mt-3">
                 <div className="flex items-center">
                   <div className="flex items-center">
-                    <Ratings rating={data?.ratings} />
+                    <Ratings rating={4} />
                   </div>
                   <p className="ml-2 text-sm text-gray-500">
-                    ({data?.reviews?.length} reviews)
+                    ({429} reviews)
                   </p>
                 </div>
               </div>
@@ -333,46 +333,8 @@ const ProductDetails = ({ data }) => {
                 </motion.button>
               </div>
 
-              {/* Share and Message */}
-              <div className="mt-6 flex items-center space-x-4">
-                <button
-                  onClick={handleMessageSubmit}
-                  className="flex items-center text-gray-500 hover:text-gray-700"
-                >
-                  <AiOutlineMessage className="w-5 h-5 mr-2" />
-                  Message Seller
-                </button>
-                <button className="flex items-center text-gray-500 hover:text-gray-700">
-                  <AiOutlineShareAlt className="w-5 h-5 mr-2" />
-                  Share
-                </button>
-              </div>
-
-              {/* Shop info */}
-              <div className="mt-8 border-t border-gray-200 pt-8">
-                <div className="flex items-center">
-                  <img
-                    src={getImageUrl(data?.shop?.avatar)}
-                    alt={data?.shop?.name || "Shop Avatar"}
-                    className="w-12 h-12 rounded-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "https://via.placeholder.com/50x50?text=Shop";
-                    }}
-                  />
-                  <div className="ml-4">
-                    <h3 className="text-sm font-medium text-gray-900">
-                      {data?.shop?.name}
-                    </h3>
-                    <div className="flex items-center mt-1">
-                      <Ratings rating={data?.shop?.ratings} />
-                      <span className="ml-2 text-sm text-gray-500">
-                        ({data?.shop?.ratings} rating)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+             
+             
             </motion.div>
           </div>
         </div>

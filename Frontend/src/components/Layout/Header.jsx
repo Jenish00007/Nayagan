@@ -98,51 +98,7 @@ const Header = ({ activeHeading }) => {
               </Link>
             </div>
 
-            {/* Enhanced Search Box */}
-            <div className="flex-1 max-w-2xl mx-8 relative">
-              <div className="relative group">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="h-[50px] w-full pl-4 pr-12 border-2 border-gray-200 rounded-full text-gray-700 bg-white shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-300 group-hover:shadow-md"
-                />
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full p-2 cursor-pointer hover:scale-105 transition-transform duration-300">
-                  <AiOutlineSearch size={24} className="text-white" />
-                </div>
-              </div>
-
-              {/* Search Results Dropdown */}
-              {searchData && searchData.length !== 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-96 overflow-y-auto">
-                  <div className="p-2">
-                    {searchData.map((item, index) => (
-                      <Link 
-                        key={index}
-                        to={`/product/${item._id}`}
-                        className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                        onClick={() => setSearchData(null)}
-                      >
-                        <img
-                          src={item.images?.[0] ? `${item.images[0]}` : "https://via.placeholder.com/150?text=Product"}
-                          alt={item.name}
-                          className="w-12 h-12 object-cover rounded-lg mr-3 border border-gray-200"
-                        />
-                        <div className="flex-1">
-                          <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
-                            {item.name}
-                          </h3>
-                          <p className="text-xs text-gray-500 mt-1">
-                            ₹{item.discountPrice || item.originalPrice}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+           
 
             {/* User Actions - Desktop */}
             <div className="flex items-center space-x-6">
@@ -203,50 +159,7 @@ const Header = ({ activeHeading }) => {
         </div>
       </div>
 
-      {/* Navigation Bar */}
-      <div
-        className={`${
-          active ? "shadow-lg fixed top-0 left-0 z-50 backdrop-blur-md bg-gradient-to-r from-blue-600 to-purple-700" : "bg-gradient-to-r from-blue-600 to-purple-700"
-        } transition-all duration-300 hidden lg:flex items-center justify-between w-full h-[70px]`}
-      >
-        <div className={`${styles.section} relative ${styles.noramlFlex} justify-between`}>
-          {/* Categories Dropdown */}
-          <div className="relative">
-            <div 
-              className="relative h-[50px] w-[280px] cursor-pointer"
-              onClick={() => setDropDown(!dropDown)}
-            >
-              <div className="h-full w-full flex items-center justify-between pl-4 pr-4 bg-white/10 backdrop-blur-sm text-white font-medium text-base rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300 group">
-                <div className="flex items-center">
-                  <BiMenuAltLeft size={24} className="mr-3 group-hover:scale-110 transition-transform duration-300" />
-                  <span>All Categories</span>
-                </div>
-                <IoIosArrowDown
-                  size={18}
-                  className={`transition-transform duration-300 ${dropDown ? 'rotate-180' : ''}`}
-                />
-              </div>
-              {dropDown && (
-                <DropDown
-                  categoriesData={categories.map(category => ({
-                    id: category._id,
-                    title: category.name,
-                    image_Url: category.image || "https://via.placeholder.com/150?text=Category"
-                  }))}
-                  setDropDown={setDropDown}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Navigation Items */}
-          <div className="flex-1 flex justify-center">
-            <Navbar active={activeHeading} />
-          </div>
-
-
-        </div>
-      </div>
+     
 
       {/* Mobile Header */}
       <div
@@ -318,48 +231,7 @@ const Header = ({ activeHeading }) => {
               </div>
             </div>
 
-            {/* Mobile Search */}
-            <div className="p-4 border-b border-gray-200">
-              <div className="relative">
-                <input
-                  type="search"
-                  placeholder="Search"
-                  className="h-[45px] w-full pl-4 pr-12 border-2 border-gray-200 rounded-full text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-300"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full p-2">
-                  <AiOutlineSearch size={20} className="text-white" />
-                </div>
-
-                {searchData && searchData.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-50 max-h-64 overflow-y-auto">
-                    <div className="p-2">
-                      {searchData.map((item, index) => (
-                        <Link
-                          key={index}
-                          to={`/product/${item._id}`}
-                          className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                          onClick={() => {
-                            setSearchData(null);
-                            setOpen(false);
-                          }}
-                        >
-                          <img
-                            src={item.images && item.images[0] ? `${backend_url}/${item.images[0]}` : "https://via.placeholder.com/150?text=Product"}
-                            alt={item.name}
-                            className="w-10 h-10 object-cover rounded-lg mr-3 border border-gray-200"
-                          />
-                          <h5 className="text-sm font-medium text-gray-900 line-clamp-2">
-                            {item.name}
-                          </h5>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+           
 
             {/* Mobile Navigation */}
             <div className="p-4">

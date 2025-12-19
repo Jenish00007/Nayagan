@@ -22,6 +22,10 @@ import {
   TrackOrderPage,
   UserInbox,
   Payment,
+  AboutPage,
+  ContactUsPage,
+  ShippingPage,
+  PrivacyPolicyPage,
 } from "./routes/Routes";
 import {
   ShopDashboardPage,
@@ -111,6 +115,10 @@ const App = () => {
         <Route path="/best-selling" element={<BestSellingPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/faq" element={<FAQPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact-us" element={<ContactUsPage />} />
+        <Route path="/shipping" element={<ShippingPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route
           path="/checkout"
           element={

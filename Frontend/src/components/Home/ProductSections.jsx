@@ -82,11 +82,9 @@ const ProductSections = () => {
   return (
     <div className="w-full">
        <div className="h-20"></div>
-      {renderProductSection("Recommended Products", recommendedProducts, "recommended")}
-      {renderProductSection("Top Offers", topOffers, "top-offers")}
-      {renderProductSection("Most Popular", popularProducts, "popular")}
-      {renderProductSection("Latest Products", latestProducts, "latest")}
-      {renderProductSection("Flash Sale", flashSaleItems, "flash-sale")}
+      
+      {renderProductSection("Dresses", latestProducts, "latest")}
+  
     </div>
     
   );
